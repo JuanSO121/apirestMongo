@@ -11,7 +11,7 @@ const HeroeSchema = Schema({
         required: [true, 'La biografia es obligatoria'],
     },
     img: {
-        type: String,
+        type: Array,
         required: [true, 'La imagen es obligatoria'],
     },
     aparicion: {
