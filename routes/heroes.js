@@ -7,7 +7,10 @@ const { crearHeroe,
         obtenerHeroes,
         obtenerHeroe,
         actualizarHeroe, 
-        borrarHeroe } = require('../controllers/heroes');
+        borrarHeroe, 
+        obtenerImagenesHeroe,
+        agregarImagenHeroe,
+        eliminarImagenHeroe  } = require('../controllers/heroes');
 const { existeHeroePorId } = require('../helpers/db-validators');
 
 const router = Router();
@@ -25,14 +28,14 @@ router.get('/:id',[
 
 // Crear Opcion - privado - cualquier persona con un token válido
 router.post('/', [ 
-    //validarJWT,
+    validarJWT,
     check('nombre','El nombre del heroe es obligatorio').not().isEmpty(),
     validarCampos
 ], crearHeroe );
 
 // Actualizar Role- privado - cualquiera con token válido
-router.put('/:id',[
-    //validarJWT,
+router.put('/:id', [
+    validarJWT,
     check('id', 'No es un id de Mongo válido').isMongoId(),
     check('id').custom( existeHeroePorId ),
     validarCampos
@@ -40,11 +43,35 @@ router.put('/:id',[
 
 // Borrar un Role - Admin
 router.delete('/:id',[
-    //validarJWT,
+    validarJWT,
     //esAdminRole,
     check('id', 'No es un id de Mongo válido').isMongoId(),
     check('id').custom( existeHeroePorId ),
     validarCampos,
 ],borrarHeroe);
+
+// En routes/heroes.js - Añadir estas rutas
+router.get('/:id/images', [
+    validarJWT,
+    check('id', 'No es un id de Mongo válido').isMongoId(),
+    check('id').custom(existeHeroePorId),
+    validarCampos,
+], obtenerImagenesHeroe);
+
+router.post('/:id/images', [
+    validarJWT,
+    check('id', 'No es un id de Mongo válido').isMongoId(),
+    check('id').custom(existeHeroePorId),
+    check('imageUrl', 'La URL de la imagen es obligatoria').not().isEmpty(),
+    validarCampos,
+], agregarImagenHeroe);
+
+router.delete('/:id/images/:imageIndex', [
+    validarJWT,
+    check('id', 'No es un id de Mongo válido').isMongoId(),
+    check('id').custom(existeHeroePorId),
+    check('imageIndex', 'El índice de la imagen es obligatorio').isNumeric(),
+    validarCampos,
+], eliminarImagenHeroe);
 
 module.exports = router;

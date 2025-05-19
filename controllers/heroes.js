@@ -160,10 +160,117 @@ const borrarHeroe = async (req, res = response) => {
   }
 };
 
+// En controllers/heroes.js - Añadir estos controladores
+const obtenerImagenesHeroe = async (req, res = response) => {
+    const { id } = req.params;
+    try {
+        const heroe = await Heroe.findById(id);
+        const imagenes = Array.isArray(heroe.img) ? heroe.img : 
+                        (heroe.img ? [heroe.img] : []);
+        
+        res.json({ Ok: true, resp: imagenes });
+    } catch (error) {
+        res.json({ Ok: false, resp: error });
+    }
+};
+
+const agregarImagenHeroe = async (req, res = response) => {
+    const { id } = req.params;
+    const { imageUrl } = req.body;
+    
+    try {
+        const heroe = await Heroe.findById(id);
+        
+        // Convertir img a array si es necesario
+        let imagenes = [];
+        if (Array.isArray(heroe.img)) {
+            imagenes = [...heroe.img];
+        } else if (heroe.img) {
+            imagenes = [heroe.img];
+        }
+        
+        // Verificar si la imagen ya existe
+        if (imagenes.includes(imageUrl)) {
+            return res.json({
+                Ok: false,
+                msg: 'Esta imagen ya existe en la galería del héroe'
+            });
+        }
+        
+        // Añadir la nueva imagen
+        imagenes.push(imageUrl);
+        
+        // Actualizar el héroe
+        const heroeActualizado = await Heroe.findByIdAndUpdate(id, 
+            { img: imagenes }, 
+            { new: true }
+        );
+        
+        res.json({ 
+            Ok: true, 
+            msg: 'Imagen agregada correctamente', 
+            resp: heroeActualizado 
+        });
+    } catch (error) {
+        res.json({ Ok: false, resp: error });
+    }
+};
+
+const eliminarImagenHeroe = async (req, res = response) => {
+    const { id, imageIndex } = req.params;
+    
+    try {
+        const heroe = await Heroe.findById(id);
+        
+        // Convertir img a array si es necesario
+        let imagenes = [];
+        if (Array.isArray(heroe.img)) {
+            imagenes = [...heroe.img];
+        } else if (heroe.img) {
+            imagenes = [heroe.img];
+        }
+        
+        // Verificar si el índice es válido
+        if (imageIndex < 0 || imageIndex >= imagenes.length) {
+            return res.json({
+                Ok: false,
+                msg: 'Índice de imagen inválido'
+            });
+        }
+        
+        // Eliminar la imagen
+        imagenes.splice(imageIndex, 1);
+        
+        // Si no quedan imágenes, añadir imagen por defecto (opcional)
+        if (imagenes.length === 0) {
+            imagenes = ['assets/img/no-image.png'];
+        }
+        
+        // Actualizar el héroe
+        const heroeActualizado = await Heroe.findByIdAndUpdate(id, 
+            { img: imagenes }, 
+            { new: true }
+        );
+        
+        res.json({ 
+            Ok: true, 
+            msg: 'Imagen eliminada correctamente', 
+            resp: heroeActualizado 
+        });
+    } catch (error) {
+        res.json({ Ok: false, resp: error });
+    }
+};
+
+
+
 module.exports = {
   crearHeroe,
   obtenerHeroes,
   obtenerHeroe,
   actualizarHeroe,
   borrarHeroe,
+  obtenerImagenesHeroe,
+  agregarImagenHeroe,
+  eliminarImagenHeroe
 };
